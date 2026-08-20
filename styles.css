@@ -1,0 +1,502 @@
+/* Даниил Ключко — структура, проступающая из темноты. Тёмная тема единственная. */
+
+@font-face {
+  font-family: Onest;
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('onest-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: Onest;
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('onest-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --base:      #0A0A0C;
+  --panel:     #131418;
+  --line:      #1E2028;
+  --muted:     #6E7480;   /* только нетекстовые роли: правила, выключенные состояния */
+  --dim:       #8A9099;   /* читаемый вторичный текст, 6.1:1 к базе */
+  --text:      #E8E6E3;
+  --copper:    #C97A3E;
+
+  --measure: 63ch;
+  --gut: clamp(1.25rem, 5vw, 4rem);
+  --rhythm: clamp(6rem, 14vh, 11rem);
+
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--base);
+  scrollbar-color: var(--line) var(--base);
+}
+
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--text);
+  font-family: Onest, ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1rem, .96rem + .2vw, 1.0625rem);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--copper); color: #0A0A0C; }
+
+:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--base); }
+::-webkit-scrollbar-thumb { background: var(--line); border: 3px solid var(--base); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #2b2e38; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+h1, h2, h3 { font-weight: 500; letter-spacing: -0.035em; text-wrap: balance; margin: 0; }
+
+p { margin: 0; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 10;
+  background: var(--copper); color: #0A0A0C;
+  padding: .75rem 1.25rem; font-weight: 500; text-decoration: none;
+}
+.skip:focus { left: 0; }
+
+/* ── Целевое действие ─────────────────────────────────────────── */
+
+.action {
+  --pad: .55rem;
+  display: inline-flex; align-items: baseline; gap: .75rem;
+  color: var(--copper);
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  padding-block: var(--pad);
+  border-bottom: 1px solid color-mix(in srgb, var(--copper) 35%, transparent);
+  transition: border-color .5s var(--ease), gap .5s var(--ease);
+}
+.action:hover, .action:focus-visible { border-bottom-color: var(--copper); gap: 1.1rem; }
+.action__handle { color: var(--dim); font-size: .8125em; font-weight: 400; letter-spacing: 0; }
+.action--lg { font-size: clamp(1.25rem, 1rem + 1.4vw, 1.9rem); --pad: .8rem; }
+
+/* ── 1. Первый экран ──────────────────────────────────────────── */
+/* Фигура растёт снизу и уходит за край. Текст разнесён по всей высоте:
+   имя вверху, тезис в середине, действие внизу. Пустой полосы нет.
+   Движение здесь минимальное — весь вес несёт экран веера ниже. */
+
+/* герой и веер — один непрерывный отрезок: холст частиц накрывает оба */
+.reveal { position: relative; }
+.reveal__canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  padding-inline: var(--gut);
+  overflow: hidden;
+}
+
+/* свет, из которого проступает фигура — статичный, не анимированный */
+.hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(52% 44% at 68% 46%, #1a1c22 0%, rgba(19,20,24,.42) 44%, transparent 74%);
+  pointer-events: none;
+}
+
+.hero__portrait {
+  position: absolute;
+  bottom: -4svh;
+  right: max(0px, calc((100% - 78rem) / 2 - var(--gut)));
+  height: min(90svh, 48rem);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity .18s linear;
+}
+.hero__portrait img {
+  height: 100%;
+  width: auto;
+  max-width: none;
+  /* куртка растворяется в основании, фигура не заканчивается срезом */
+  -webkit-mask-image: linear-gradient(to bottom, #000 44%, rgba(0,0,0,.50) 76%, rgba(0,0,0,.14) 93%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 44%, rgba(0,0,0,.50) 76%, rgba(0,0,0,.14) 93%, transparent 100%);
+}
+
+.hero__grid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(2rem, 6vh, 4rem);
+  padding-block: clamp(2.5rem, 7vh, 5rem);
+}
+
+h1 {
+  font-size: clamp(2.75rem, 1.6rem + 5.2vw, 5.75rem);
+  line-height: .96;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  margin-bottom: clamp(.75rem, 1.6vh, 1.15rem);
+}
+
+.hero__role {
+  color: var(--dim);
+  font-size: clamp(1rem, .94rem + .3vw, 1.15rem);
+  letter-spacing: -0.01em;
+}
+
+.stip {
+  font-size: clamp(1.3rem, 1.05rem + 1.15vw, 2.05rem);
+  line-height: 1.28;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  max-width: 20ch;
+  margin-bottom: clamp(1.25rem, 3vh, 1.85rem);
+  text-wrap: balance;
+}
+
+.lede {
+  color: var(--dim);
+  max-width: 42ch;
+}
+
+/* появление по очереди; по умолчанию всё видимо, анимация только уводит в него */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__top h1,
+  .hero__role,
+  .stip,
+  .lede,
+  .hero__bottom .action {
+    animation: rise .95s var(--ease) backwards;
+  }
+  .hero__top h1        { animation-delay: .05s; }
+  .hero__role          { animation-delay: .20s; }
+  .stip                { animation-delay: .36s; }
+  .lede                { animation-delay: .50s; }
+  .hero__bottom .action{ animation-delay: .44s; animation-duration: .7s; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── 2. Экран веера ───────────────────────────────────────────── */
+
+.field {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--rhythm) 0;
+  overflow: hidden;
+}
+.field__line {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  margin: 0 auto;
+  align-self: end;
+  width: 100%;
+  max-width: 78rem;
+  padding-inline: var(--gut);
+  font-size: clamp(1.1rem, .95rem + .8vw, 1.6rem);
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-wrap: balance;
+}
+.field__line > span { display: block; max-width: 24ch; pointer-events: auto; }
+
+/* ── 3. Как я работаю ─────────────────────────────────────────── */
+
+.method {
+  position: relative;
+  max-width: 78rem; margin-inline: auto;
+  padding: var(--rhythm) var(--gut);
+}
+/* поле дрейфующих узлов; связи рождаются только под курсором */
+.method__net {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.method > h2, .method > .stack { position: relative; z-index: 1; }
+
+h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+  line-height: 1.15;
+  margin-bottom: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.stack { list-style: none; margin: 0; padding: 0; --peek: 4.75rem; }
+
+.card {
+  background: #131418;
+  border: 1px solid rgba(201, 122, 62, .34);
+  border-radius: 4px;
+  transition:
+    transform .4s var(--ease),
+    border-color .4s var(--ease),
+    background-color .4s var(--ease),
+    box-shadow .45s var(--ease);
+}
+.card + .card { margin-top: 1.25rem; }
+
+.card:hover {
+  background: #16171C;
+  border-color: rgba(201, 122, 62, .85);
+  transform: translateY(-3px);
+  box-shadow:
+    0 14px 44px rgba(201, 122, 62, .30),
+    0 4px 16px rgba(201, 122, 62, .18);
+}
+
+.card__head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  padding: clamp(1.6rem, 3vw, 2.25rem) clamp(1.5rem, 3.4vw, 2.75rem);
+  background: none; border: 0;
+  color: inherit; font: inherit; text-align: left;
+  cursor: pointer;
+}
+.card__num {
+  color: var(--copper);
+  font-size: .8125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+}
+.card__title {
+  font-size: clamp(1.15rem, 1rem + .7vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.card__when {
+  color: var(--dim);
+  font-size: .875rem;
+  text-align: right;
+}
+.card__body { padding: 0; }
+.card__body p {
+  padding: 0 clamp(1.5rem, 3.4vw, 2.75rem) clamp(1.9rem, 3.4vw, 2.5rem);
+  max-width: var(--measure);
+  color: var(--dim);
+}
+
+/* ── Режим 1: прилипание. Включается скриптом на широких экранах ── */
+
+.stack--pin { --pin: 11vh; }
+.stack--pin .card {
+  position: sticky;
+  top: calc(var(--pin) + var(--depth, 0) * var(--peek));
+}
+.stack--pin .card + .card { margin-top: 26vh; }
+.stack--pin .card:last-child { margin-bottom: 4vh; }
+
+/* ── Режим 2: раскрытие по тапу. Узкие экраны ─────────────────── */
+
+.stack--tap .card__body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height .45s var(--ease), opacity .35s var(--ease);
+}
+.stack--tap .card.is-open .card__body { opacity: 1; }
+
+/* ── 4. Проекты ───────────────────────────────────────────────── */
+
+.work {
+  max-width: 78rem; margin-inline: auto;
+  padding: var(--rhythm) var(--gut);
+}
+
+.proj {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: clamp(1.75rem, 5vw, 5rem);
+  padding: clamp(2.5rem, 6vh, 4rem) clamp(1rem, 2vw, 1.75rem);
+  margin-inline: clamp(-1rem, -2vw, -1.75rem);
+  border-top: 1px solid var(--line);
+  transition: background-color .3s var(--ease);
+}
+/* медная линия слева — псевдоэлементом, чтобы вёрстка не дёргалась */
+.proj::before {
+  content: "";
+  position: absolute;
+  left: 0; top: -1px; bottom: 0;
+  width: 2px;
+  background: var(--copper);
+  opacity: 0;
+  transition: opacity .3s var(--ease);
+}
+.proj:hover { background: #101116; }
+.proj:hover::before { opacity: 1; }
+.proj:last-child { border-bottom: 1px solid var(--line); }
+
+.proj h3 {
+  font-size: clamp(1.25rem, 1.1rem + .6vw, 1.6rem);
+  line-height: 1.25;
+  font-weight: 500;
+  margin-bottom: .4rem;
+}
+.proj__meta > :first-child,
+.proj__story > :first-child { margin-top: 0; }
+.proj__story > .proj__lead { line-height: 1.25; }
+.proj__what { color: var(--text); margin-bottom: 1.15rem; }
+.proj__role { color: var(--dim); font-size: .9375rem; margin-bottom: 1.15rem; }
+.proj__role--claim { color: var(--text); }
+
+.proj__link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  color: var(--copper);
+  font-size: .9375rem;
+  text-decoration: none;
+  transition: gap .3s var(--ease), color .3s var(--ease);
+}
+.proj__link span {
+  border-bottom: 1px solid color-mix(in srgb, var(--copper) 40%, transparent);
+  padding-bottom: 2px;
+  transition: border-color .3s var(--ease);
+}
+.proj__arrow { flex: none; transform: translateY(-1px); }
+.proj__link:hover span,
+.proj__link:focus-visible span { border-bottom-color: var(--copper); }
+.proj__link:hover { gap: .7rem; }
+
+.proj__story p { max-width: var(--measure); color: var(--dim); }
+.proj__story p + p { margin-top: 1rem; }
+.proj__lead {
+  color: var(--text) !important;
+  font-size: clamp(1.3rem, 1.1rem + .8vw, 1.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+/* ── 5. Закрытие ──────────────────────────────────────────────── */
+
+.close {
+  max-width: 78rem; margin-inline: auto;
+  padding: var(--rhythm) var(--gut);
+}
+.close__note {
+  color: var(--dim);
+  max-width: var(--measure);
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+}
+
+/* ── 6. Подвал ────────────────────────────────────────────────── */
+
+.foot {
+  max-width: 78rem; margin-inline: auto;
+  padding: clamp(2rem, 5vh, 3rem) var(--gut) clamp(3rem, 7vh, 4.5rem);
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 1rem 2rem;
+  justify-content: space-between; align-items: baseline;
+}
+.foot__made { color: var(--dim); font-size: .9375rem; }
+.foot__lang { display: flex; gap: .75rem; font-size: .9375rem; letter-spacing: .04em; }
+.lang--on { color: var(--text); }
+.lang--off {
+  color: var(--dim);
+  cursor: not-allowed;
+  background: none;
+  border: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+}
+
+/* ── Адаптив ──────────────────────────────────────────────────── */
+
+/* промежуточные ширины: контейнер уже не даёт тексту своей половины,
+   поэтому фигура уступает место, а не наезжает на абзац */
+@media (min-width: 60.0625rem) and (max-width: 78rem) {
+  .hero__portrait { height: min(70svh, 38rem); }
+  .lede { max-width: 34ch; }
+  .stip { max-width: 17ch; }
+}
+
+@media (max-width: 60rem) {
+  /* фигура держит нижнюю половину, текст живёт над её кромкой,
+     действие ложится на тёмный низ куртки и остаётся читаемым */
+  /* текст собирается вверху, действие прижато вниз, а фигура поднимается так,
+     чтобы под ссылку попал тёмный низ куртки, а не лицо */
+  .hero__portrait {
+    height: min(48svh, 24rem);
+    bottom: -4svh;
+    right: 50%;
+    transform: translateX(50%);
+  }
+  /* на телефоне фигура обязана дойти до края, но к полосе действия
+     от неё должна остаться тень, а не освещённая кожа */
+  .hero__portrait img {
+    -webkit-mask-image: linear-gradient(to bottom, #000 30%, rgba(0,0,0,.30) 56%, rgba(0,0,0,.05) 71%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 30%, rgba(0,0,0,.30) 56%, rgba(0,0,0,.05) 71%, transparent 100%);
+  }
+  .hero__grid {
+    justify-content: flex-start;
+    gap: 0;
+    padding-block: clamp(2rem, 5vh, 3rem);
+  }
+  .hero__mid { margin-top: clamp(1.75rem, 5vh, 3rem); max-width: 30ch; }
+  .hero__bottom { margin-top: auto; }
+  .stip { max-width: 17ch; }
+  .hero::before { background: radial-gradient(76% 36% at 50% 62%, #1a1c22 0%, rgba(19,20,24,.4) 46%, transparent 76%); }
+
+  .proj { grid-template-columns: 1fr; gap: 1.75rem; }
+  .field { min-height: 88svh; }
+  .field__line { align-self: end; }
+}
+
+@media (max-width: 34rem) {
+  .card__head { grid-template-columns: auto 1fr; row-gap: .3rem; }
+  .card__when { grid-column: 2; text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
