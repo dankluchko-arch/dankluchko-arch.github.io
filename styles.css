@@ -239,12 +239,15 @@ h1 {
 
 /* ── 3. Как я работаю ─────────────────────────────────────────── */
 
+/* секция на всю ширину — поле узлов живёт и по бокам карточек;
+   колонку контента держит .method__inner */
 .method {
   position: relative;
-  max-width: 78rem; margin-inline: auto;
-  padding: var(--rhythm) var(--gut);
+  padding: var(--rhythm) 0;
+  overflow: hidden;
 }
-/* поле дрейфующих узлов; связи рождаются только под курсором */
+/* поле дрейфующих узлов: тусклая сеть в покое, созвездие под курсором,
+   волна подсветки при входе в секцию */
 .method__net {
   position: absolute;
   inset: 0;
@@ -252,7 +255,13 @@ h1 {
   z-index: 0;
   pointer-events: none;
 }
-.method > h2, .method > .stack { position: relative; z-index: 1; }
+.method__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
 
 h2 {
   font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
