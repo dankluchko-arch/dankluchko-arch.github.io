@@ -110,6 +110,10 @@ p { margin: 0; }
   width: 100%; height: 100%;
   z-index: 1;
   pointer-events: none;
+  /* лучи длиннее экрана поля и резались бы о край холста — на стыке с методом
+     свет растворяется в грунт, а не обрывается линией */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10rem), transparent);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 10rem), transparent);
 }
 
 .hero {
@@ -240,11 +244,11 @@ h1 {
 /* ── 3. Как я работаю ─────────────────────────────────────────── */
 
 /* секция на всю ширину — поле узлов живёт и по бокам карточек;
-   колонку контента держит .method__inner */
+   колонку контента держит .method__inner. Никакого overflow: hidden —
+   он отключает прилипание карточек (.stack--pin живёт на sticky). */
 .method {
   position: relative;
   padding: var(--rhythm) 0;
-  overflow: hidden;
 }
 /* поле дрейфующих узлов: тусклая сеть в покое, созвездие под курсором,
    волна подсветки при входе в секцию */
